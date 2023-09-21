@@ -75,8 +75,7 @@ def eval_expr(expression):
     elif isinstance(expression, Or):
         return eval_expr(expression.left) or eval_expr(expression.right)
     else:
-        if expression == True: return True
-        else: return False
+        return expression == True
 
 # tests that evaluate to true
 true_tests = [And(True, True),
