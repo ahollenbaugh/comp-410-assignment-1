@@ -180,7 +180,29 @@ def add_literal(immutable_map, variable, boolean):
 #     you're still on-track.
 #
 def solve(goals, literals):
-    pass
+    print(f"goals: {goals}")
+    if isinstance(goals, Nil): 
+        return literals # base case - you have a satisfying solution! yay!
+    elif isinstance(goals, Cons): # recursive case
+        if isinstance(goals.head, Literal): 
+            result = add_literal(literals, goals.head.variable, goals.head.is_positive)
+            if result is None: 
+                return None # aww, you don't have a satisfying solution. womp womp.
+            else: 
+                return solve(goals.tail, result)
+        elif isinstance(goals.head, And): 
+            and_list = Cons(goals.head.left, Cons(goals.head.right, Nil())) # break and expr into list of operands
+            literals = solve(Cons(and_list.head, Nil()), literals)
+            if literals is None:
+                return None
+            else:
+                return solve(and_list.tail, literals)
+        elif isinstance(goals.head, Or): 
+            result = solve(Cons(goals.head.left, Nil()), literals)
+            if result is None:
+                return solve(Cons(goals.head.right, Nil()), literals)
+            else:
+                return result
 
 def solve_one(formula):
     return solve(Cons(formula, Nil()), ImmutableMap())
@@ -217,3 +239,8 @@ def run_tests():
 
 if __name__ == "__main__":
     run_tests()
+    # solve(Nil(), "literals")
+    # solve(Cons(And("left", "right"), "tail"), "literals")
+    # solve(Cons(Or("left", "right"), "tail"), "literals")
+    # solve(Cons(Literal("a", True), "tail"), "literals")
+    #solve(Cons(And(Literal("a", True), Literal("b", True)), Nil()), ImmutableMap())
