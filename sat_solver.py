@@ -180,28 +180,36 @@ def add_literal(immutable_map, variable, boolean):
 #     you're still on-track.
 #
 def solve(goals, literals):
-    print(f"goals: {goals}")
     if isinstance(goals, Nil): 
-        return literals # base case - you have a satisfying solution! yay!
-    elif isinstance(goals, Cons): # recursive case
+        # Once the list of expressions is empty, that means we've found a solution!
+        return literals
+    elif isinstance(goals, Cons):
         if isinstance(goals.head, Literal): 
+            # Try adding the literal to the solution set:
             result = add_literal(literals, goals.head.variable, goals.head.is_positive)
             if result is None: 
-                return None # aww, you don't have a satisfying solution. womp womp.
+                return None # There's been a conflict, therefore there's no solution.
             else: 
+                # Once literal is added to the solution, recursively explore the rest of the list:
                 return solve(goals.tail, result)
         elif isinstance(goals.head, And): 
-            and_list = Cons(goals.head.left, Cons(goals.head.right, Nil())) # break and expr into list of operands
+            # Take the operands and put them into a list:
+            and_list = Cons(goals.head.left, Cons(goals.head.right, Nil()))
+            # Recursively explore the head of that list:
             literals = solve(Cons(and_list.head, Nil()), literals)
             if literals is None:
-                return None
+                return None # Don't bother exploring any further -- this formula is not satisfiable.
             else:
+                # Recursively explore the rest of the list (assuming we didn't get an unsatisfiable solution):
                 return solve(and_list.tail, literals)
         elif isinstance(goals.head, Or): 
+            # Try exploring one possibility:
             result = solve(Cons(goals.head.left, Nil()), literals)
             if result is None:
+                # Didn't find a solution there. Let's try exploring another possibility:
                 return solve(Cons(goals.head.right, Nil()), literals)
             else:
+                # No need to explore further. We found a solution!
                 return result
 
 def solve_one(formula):
@@ -239,8 +247,3 @@ def run_tests():
 
 if __name__ == "__main__":
     run_tests()
-    # solve(Nil(), "literals")
-    # solve(Cons(And("left", "right"), "tail"), "literals")
-    # solve(Cons(Or("left", "right"), "tail"), "literals")
-    # solve(Cons(Literal("a", True), "tail"), "literals")
-    #solve(Cons(And(Literal("a", True), Literal("b", True)), Nil()), ImmutableMap())
