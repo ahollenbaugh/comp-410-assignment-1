@@ -75,6 +75,10 @@ class ImmutableMap:
 
     def get(self, key):
         return self.mapping[key]
+    
+    def __str__(self):
+        if self.mapping is not None:
+            return str(self.mapping)
 
 class List:
     def __init__(self):
@@ -192,11 +196,11 @@ def solve(goals, literals):
                 return solve(goals.tail, result)
         elif isinstance(goals.head, And): 
             and_list = Cons(goals.head.left, Cons(goals.head.right, Nil())) # break and expr into list of operands
-            literals = solve(Cons(and_list.head, Nil()), literals)
+            literals = solve(Cons(and_list.head, Nil()), literals) # "pop" head from list and explore it
             if literals is None:
                 return None
             else:
-                return solve(and_list.tail, literals)
+                return solve(and_list.tail, literals) # recursively explore the rest of the list
         elif isinstance(goals.head, Or): 
             result = solve(Cons(goals.head.left, Nil()), literals)
             if result is None:
@@ -223,10 +227,13 @@ unsat_tests = [And(Literal("x", True),
 def run_tests():
     tests_failed = False
     for test in sat_tests:
-        if solve_one(test) is None:
+        result = solve_one(test)
+        if result is None:
             print("Failed: {}".format(test))
             print("\tWas UNSAT, should have been SAT")
             tests_failed = True
+        else:
+            print(result)
 
     for test in unsat_tests:
         if solve_one(test) is not None:
